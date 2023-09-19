@@ -1,4 +1,5 @@
 import random
+import csv
 
 # Lista de pessoas
 nomes = [
@@ -25,6 +26,9 @@ divisao = {
     "Sala de Cambone": 1
 }
 
+# Criar um dicionário para rastrear quantas vezes cada pessoa ficou em um setor
+vezes_que_ficou = {nome: 0 for nome in nomes}
+
 # Calcula o número total de vagas disponíveis
 vagas_disponiveis = sum(divisao.values())
 
@@ -32,20 +36,34 @@ vagas_disponiveis = sum(divisao.values())
 if vagas_disponiveis < pessoas:
     print("Não há vagas suficientes para acomodar todas as pessoas.")
 else:
-    # Distribui aleatoriamente as pessoas nas categorias
+    # Distribui aleatoriamente as pessoas nas categorias e atualiza as vezes que cada pessoa ficou em um setor
     random.shuffle(nomes)
-    distribuicao = {categoria: [] for categoria in divisao.keys()}
+    gerenciamento_de_setores = {categoria: [] for categoria in divisao.keys()}
     for categoria, vagas in divisao.items():
         for _ in range(vagas):
             if nomes:
                 pessoa = nomes.pop()
-                distribuicao[categoria].append(pessoa)
+                gerenciamento_de_setores[categoria].append(pessoa)
+                vezes_que_ficou[pessoa] += 1
 
-    # Distribui as pessoas restantes na "Sala de Cambone"
+    # Distribui as pessoas restantes na "Sala de Cambone" e atualiza as vezes que cada pessoa ficou em um setor
     while nomes:
         pessoa = nomes.pop()
-        distribuicao["Sala de Cambone"].append(pessoa)
+        gerenciamento_de_setores["Sala de Cambone"].append(pessoa)
+        vezes_que_ficou[pessoa] += 1
 
-    # Imprime a distribuição
-    for categoria, pessoas_na_categoria in distribuicao.items():
-        print(f"{categoria}: {', '.join(pessoas_na_categoria)}")
+    # Imprime a distribuição no terminal
+    for categoria, pessoas_na_categoria in gerenciamento_de_setores.items():
+        print(f"Setor: {categoria}")
+        print("Nomes:", ", ".join(pessoas_na_categoria))
+        print()  # Adicione uma linha em branco entre os setores
+
+    # Salva os resultados em um arquivo CSV com ponto e vírgula como delimitador
+    with open("gerenciamento_de_setores.csv", mode='w', newline='') as file:
+        writer = csv.writer(file, delimiter=';')
+        writer.writerow(["Nome", "Setor", "Vezes que ficou"])
+        for categoria, pessoas_na_categoria in gerenciamento_de_setores.items():
+            for pessoa in pessoas_na_categoria:
+                writer.writerow([pessoa, categoria, vezes_que_ficou[pessoa]])
+
+    print("Resultados salvos no arquivo 'gerenciamento_de_setores.csv'.")
